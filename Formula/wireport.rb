@@ -33,7 +33,13 @@ class Wireport < Formula
         bin.install "wireport-darwin-amd64" => "wireport"
       end
     elsif OS.linux?
-      bin.install "usr/bin/wireport"
+      # Find the wireport binary in the extracted tar contents
+      wireport_binary = Dir.glob("**/wireport").first
+      if wireport_binary && File.executable?(wireport_binary)
+        bin.install wireport_binary => "wireport"
+      else
+        raise "Could not find wireport binary in the extracted archive"
+      end
     end
   end
 
