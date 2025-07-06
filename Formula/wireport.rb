@@ -6,20 +6,20 @@ class Wireport < Formula
   on_macos do
     if Hardware::CPU.arm?
       url "https://github.com/MultionLabs/wireport/releases/download/v0.9.1/wireport-macos-arm64.zip"
-      sha256 "e360f80e6b07fe866d07097febfde8b259d294fb0b778e65231a644987a34bea"
+      sha256 "f5198ee94c14bcf04703aab4dc1c4ba0703c3177ff5e3a2ef8409009db14e689"
     else
       url "https://github.com/MultionLabs/wireport/releases/download/v0.9.1/wireport-macos-amd64.zip"
-      sha256 "809aba4cc031f35316dd0862813d93b60208a597b369a2acbd78cc681e592b40"
+      sha256 "3077f6134d199d049e99a801bb00dd125d5d414088852879f294d3bcbe77891d"
     end
   end
 
   on_linux do
     if Hardware::CPU.arm?
       url "https://github.com/MultionLabs/wireport/releases/download/v0.9.1/wireport-linux-arm64.tar"
-      sha256 "a952726db0448e7f494705d48714a83769b5b5b1553cb36bc0fdb3990183a758"
+      sha256 "396364fc3e3f4e516862d9cd416d08423dc7ca4d19a8d589c8916bf87ee7e8ed"
     else
       url "https://github.com/MultionLabs/wireport/releases/download/v0.9.1/wireport-linux-amd64.tar"
-      sha256 "d6411027ba2d39aa0ce2e24bdd38564451bf839be8069dc45ce47ad7660382a1"
+      sha256 "291a095ce433e3b7a16f3a360884a8bc37f1117cf05f6ba27e6d0f6aa4658423"
     end
   end
 
