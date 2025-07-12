@@ -1,0 +1,73 @@
+name: Auto-update Formula from Upstream Release
+
+on:
+  repository_dispatch:
+    types: [update-formula]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version (e.g. '0.9.1') – required when run manually"
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  RELEASE_REPO: MultionLabs/wireport
+
+jobs:
+  update-formula:
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ github.event.client_payload.version || github.event.inputs.version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (gettext for envsubst)
+        run: sudo apt-get update -y && sudo apt-get install -y gettext-base
+
+      - name: Download assets & compute SHAs
+        id: shas
+        shell: bash
+        run: |
+          set -euo pipefail
+          V="$VERSION"
+          BASE="https://github.com/${RELEASE_REPO}/releases/download/v${V}"
+
+          declare -A FILES=(
+            [macos_arm64]=wireport-macos-arm64.zip
+            [macos_amd64]=wireport-macos-amd64.zip
+            [linux_arm64]=wireport-linux-arm64.tar
+            [linux_amd64]=wireport-linux-amd64.tar
+          )
+
+          for key in "${!FILES[@]}"; do
+            file="${FILES[$key]}"
+            curl -sSL -o "$file" "${BASE}/$file"
+            sha=$(sha256sum "$file" | awk '{print $1}')
+            echo "sha_${key}=$sha" >> "$GITHUB_OUTPUT"
+          done
+
+      - name: Generate formula files from template
+        env:
+          V: ${{ env.VERSION }}
+          SHA_MAC_ARM64: ${{ steps.shas.outputs.sha_macos_arm64 }}
+          SHA_MAC_AMD64: ${{ steps.shas.outputs.sha_macos_amd64 }}
+          SHA_LINUX_ARM64: ${{ steps.shas.outputs.sha_linux_arm64 }}
+          SHA_LINUX_AMD64: ${{ steps.shas.outputs.sha_linux_amd64 }}
+        shell: bash
+        run: |
+          BASE="https://github.com/${RELEASE_REPO}/releases/download/v${V}"
+          export V BASE SHA_MAC_ARM64 SHA_MAC_AMD64 SHA_LINUX_ARM64 SHA_LINUX_AMD64
+          envsubst '${V} ${BASE} ${SHA_MAC_ARM64} ${SHA_MAC_AMD64} ${SHA_LINUX_ARM64} ${SHA_LINUX_AMD64}' < wireport.rb.template > Formula/wireport.rb
+          cp Formula/wireport.rb "Formula/wireport@${V}.rb"
+
+      - name: Commit & push changes
+        shell: bash
+        run: |
+          git config user.name "wireport-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add Formula/wireport.rb Formula/wireport@${VERSION}.rb
+          git commit -m "chore: bump formula to v${VERSION}" || echo "No changes to commit"
+          git push origin HEAD

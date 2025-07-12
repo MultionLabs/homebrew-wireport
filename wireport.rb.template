@@ -1,0 +1,48 @@
+class Wireport < Formula
+  desc "Self-hosted ingress proxy & VPN tunnel for exposing private services to the Internet"
+  homepage "https://github.com/MultionLabs/wireport"
+  version "${V}"
+  
+  on_macos do
+    if Hardware::CPU.arm?
+      url "${BASE}/wireport-macos-arm64.zip"
+      sha256 "${SHA_MAC_ARM64}"
+    else
+      url "${BASE}/wireport-macos-amd64.zip"
+      sha256 "${SHA_MAC_AMD64}"
+    end
+  end
+  
+  on_linux do
+    if Hardware::CPU.arm?
+      url "${BASE}/wireport-linux-arm64.tar"
+      sha256 "${SHA_LINUX_ARM64}"
+    else
+      url "${BASE}/wireport-linux-amd64.tar"
+      sha256 "${SHA_LINUX_AMD64}"
+    end
+  end
+  
+  license "MIT"
+  
+  def install
+    if OS.mac?
+      if Hardware::CPU.arm?
+        bin.install "wireport-darwin-arm64" => "wireport"
+      else
+        bin.install "wireport-darwin-amd64" => "wireport"
+      end
+    elsif OS.linux?
+      wireport_binary = Dir.glob("**/wireport").first
+        if wireport_binary && File.executable?(wireport_binary)
+            bin.install wireport_binary => "wireport"
+        else
+            raise "Could not find wireport binary in the extracted archive"
+        end
+      end
+  end
+  
+  test do
+    system "#{bin}/wireport", "--version"
+  end
+end
