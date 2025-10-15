@@ -1,4 +1,4 @@
-class Wireport < Formula
+class WireportAT095 < Formula
   desc "Self-hosted ingress proxy & VPN tunnel for exposing private services to the Internet"
   homepage "https://github.com/MultionLabs/wireport"
   version "0.9.5"
