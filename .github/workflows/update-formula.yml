@@ -59,9 +59,16 @@ jobs:
         shell: bash
         run: |
           BASE="https://github.com/${RELEASE_REPO}/releases/download/v${V}"
-          export V BASE SHA_MAC_ARM64 SHA_MAC_AMD64 SHA_LINUX_ARM64 SHA_LINUX_AMD64
-          envsubst '${V} ${BASE} ${SHA_MAC_ARM64} ${SHA_MAC_AMD64} ${SHA_LINUX_ARM64} ${SHA_LINUX_AMD64}' < wireport.rb.template > Formula/wireport.rb
-          cp Formula/wireport.rb "Formula/wireport@${V}.rb"
+          # Convert version to Homebrew format (e.g., "0.9.6" -> "096")
+          V_UNDERSCORE=$(echo "${V}" | tr -d '.')
+          # For latest version, use "Wireport", for versioned use "WireportAT{version}"
+          CLASS_NAME="Wireport"
+          export V BASE SHA_MAC_ARM64 SHA_MAC_AMD64 SHA_LINUX_ARM64 SHA_LINUX_AMD64 CLASS_NAME
+          envsubst '${V} ${BASE} ${SHA_MAC_ARM64} ${SHA_MAC_AMD64} ${SHA_LINUX_ARM64} ${SHA_LINUX_AMD64} ${CLASS_NAME}' < wireport.rb.template > Formula/wireport.rb
+          # For versioned formula, use WireportAT{version} class name
+          CLASS_NAME="WireportAT${V_UNDERSCORE}"
+          export CLASS_NAME
+          envsubst '${V} ${BASE} ${SHA_MAC_ARM64} ${SHA_MAC_AMD64} ${SHA_LINUX_ARM64} ${SHA_LINUX_AMD64} ${CLASS_NAME}' < wireport.rb.template > "Formula/wireport@${V}.rb"
 
       - name: Commit & push changes
         shell: bash
